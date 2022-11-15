@@ -60,10 +60,11 @@ class ColorButton(SquareButton):
         return super().generate(background) 
 
 # 円形のボタンクラス
-class CircleButton(Button):
-    def __init__(self, x, y, r):
+class TextCircleButton(Button):
+    def __init__(self, x, y, r, text):
         super().__init__(x, y)
         self.r = r
+        self.text = text
     def generate(self, background):
         r = self.r
         x = self.x + r
@@ -75,15 +76,15 @@ class CircleButton(Button):
             self.color, 
             self.weight
         )
+        self.text_display(background)
     def text_display(self, background):
-        text = self.text
         fontType = cv2.FONT_HERSHEY_SIMPLEX
         fontSize = 1
         fontColor = (0, 0, 0)
         x = self.x + 13
         y = self.y + 33
         cv2.putText(background, 
-            text,
+            self.text,
             (x, y),
             fontType,
             fontSize,
@@ -91,24 +92,6 @@ class CircleButton(Button):
             )
     def ret_y(self):
         return self.y + self.r * 2
-
-# 線を太くするボタンクラス
-class UpButton(CircleButton):
-    def __init__(self, x, y, r):
-        super().__init__(x, y, r)
-        self.text = "+"
-    def generate(self, background):
-        self.text_display(background)
-        return super().generate(background)
-
-# 線を細くするボタンクラス
-class DownButton(CircleButton):
-    def __init__(self, x, y, r):
-        super().__init__(x, y, r)
-        self.text = "-"
-    def generate(self, background):
-        self.text_display(background)
-        return super().generate(background)
 
 # 色・太さを変更するボタンを管理するクラス
 class Palette:
@@ -118,8 +101,8 @@ class Palette:
         self.blackbtn = ColorButton(30, 110, 50, "black")
         self.greenbtn = ColorButton(30, 170, 50, "green")
         self.bluebtn = ColorButton(30, 230, 50, "blue")
-        self.upbtn = UpButton(30, 290, 25)
-        self.downbtn = DownButton(30, 350, 25)
+        self.upbtn = TextCircleButton(30, 290, 25, "+")
+        self.downbtn = TextCircleButton(30, 350, 25, "-")
     def generate(self):
         self.redbtn.generate(self.body)
         self.blackbtn.generate(self.body)
@@ -174,6 +157,8 @@ class Canvas:
         self.lineWidth += 1
     def line_down(self):
         self.lineWidth -= 1
+    def clear(self):
+        self.background = makeBlankImg(700, 600, 255, 255, 255)
 
 # マウスイベントを管理、集約したクラスのメソッドを実行するクラス
 class Paint:
@@ -201,6 +186,8 @@ class Paint:
                 canvas.pxy = (x, y) #次回の線分描画の始点座標
         elif event == cv2.EVENT_LBUTTONUP: #左ボタンを放した時
             self.drawing = False #マウスが動いても線分を描画しないように
+        elif event == cv2.EVENT_LBUTTONDBLCLK: #左ボタンをダブルクリック
+            canvas.clear() # クリア
     def render(self):
         canvas = self.canvas.render()
         palette = self.palette.render()

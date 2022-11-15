@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-import cv2
 import numpy as np
 def saltpepper(img):
     r = np.random.rand(480, 640) # カメラの画像と解像度をそろえる
